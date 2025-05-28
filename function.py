@@ -41,12 +41,10 @@ def xuly(data, SYMB, fd):
         logging.getLogger('tensorflow').setLevel(logging.ERROR)
         
         try:
-            # Thử tải mô hình trực tiếp (không hiển thị thông báo lỗi)
             import tensorflow as tf
             try:
                 model = tf.keras.models.load_model(model_path, compile=False)
             except:
-                # Nếu lỗi, thử phương pháp thay thế mà không hiển thị thông báo
                 # Tạo mô hình mới với cấu trúc tương tự
                 model = Sequential()
                 model.add(keras.layers.LSTM(50, return_sequences=True, input_shape=(30, 1)))
@@ -54,7 +52,7 @@ def xuly(data, SYMB, fd):
                 model.add(keras.layers.Dense(25))
                 model.add(keras.layers.Dense(1))
                 
-                # Tải trọng số từ file h5 mà không hiển thị thông báo
+                # Tải trọng số từ file h5
                 import h5py
                 with h5py.File(model_path, 'r') as f:
                     # Lấy danh sách các layer có trọng số
@@ -72,7 +70,7 @@ def xuly(data, SYMB, fd):
                             if weights:
                                 layer.set_weights(weights)
         except Exception:
-            # Nếu vẫn lỗi, tạo mô hình mới mà không hiển thị thông báo
+            # Nếu vẫn lỗi, tạo mô hình mới
             model = Sequential()
             model.add(keras.layers.LSTM(50, return_sequences=True, input_shape=(30, 1)))
             model.add(keras.layers.LSTM(50, return_sequences=False))
@@ -80,7 +78,7 @@ def xuly(data, SYMB, fd):
             model.add(keras.layers.Dense(1))
             model.compile(optimizer='adam', loss='mean_squared_error')
     
-    # Dự đoán với mô hình (tắt thông báo)
+    # Dự đoán với mô hình
     testk = model.predict(input, verbose=0)
     m = float(testk)
     mn = min(scaler.data_min_)
@@ -103,19 +101,13 @@ def got_day():
     day = day-BDay(0) + datetime.timedelta(days=1) - datetime.timedelta(hours=1)
     return day
 def predict(data,fd,SYMB,day):
-    
     today = datetime.datetime.today()
     today = today - BDay(0)
-    
-
-
     data = data[:][fd]
     data = data[-30:]
     L = list()
     for i in data:
         L.append(i)
-    # print(L)
-    # print(day,today)
     date1 = list()
     ketqua = list()
     mix = {}
@@ -127,12 +119,11 @@ def predict(data,fd,SYMB,day):
         ketqua.append(x)
         mix[today]=x
         today = today - BDay(-1)
-        
     plot_raw_data(date1,ketqua,SYMB)
     data_item = mix.items()
     data_list = list(data_item)
     df = pd.DataFrame(data_list,columns=['Day','Value'])
-    st.write(df)
+    return df
 def fig_1(stock,fd,SYMB):
     fig_1,ax = plt.subplots()
     fig_1.set_figheight(5)

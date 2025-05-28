@@ -29,16 +29,14 @@ logger = logging.getLogger(__name__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
-# Hàm chuyển đổi dữ liệu thành định dạng phù hợp cho mô hình
+# Hamf chuyeenr đổi định dang dữ liệuliệu
 def got_data(data):
     input = list()
     input.append(data[:])
     return np.asarray(input)
 
-# Hàm xử lý dự đoán với mô hình LSTM
 def xuly(data, SYMB, fd):
     try:
-        # Kiểm tra dữ liệu đầu vào
         if len(data) < 30:
             logger.error(f"Không đủ dữ liệu đầu vào (cần ít nhất 30 điểm dữ liệu, chỉ có {len(data)})")
             return None
@@ -51,10 +49,8 @@ def xuly(data, SYMB, fd):
         model_path = f'Model/{SYMB}_{fd}.h5'
         model = None
         
-        # Kiểm tra xem file mô hình có tồn tại không
         if not os.path.exists(model_path):
             logger.info(f"Tạo mô hình mới cho {SYMB}_{fd}")
-            # Tạo mô hình mới
             model = Sequential()
             model.add(keras.layers.LSTM(50, return_sequences=True, input_shape=(30, 1)))
             model.add(keras.layers.LSTM(50, return_sequences=False))
@@ -62,16 +58,13 @@ def xuly(data, SYMB, fd):
             model.add(keras.layers.Dense(1))
             model.compile(optimizer='adam', loss='mean_squared_error')
             
-            # Lưu mô hình mới
             model.save(model_path)
         else:
             try:
-                # Tải mô hình
                 logger.info(f"Đang tải mô hình từ {model_path}")
                 model = tf.keras.models.load_model(model_path, compile=False)
             except Exception as e:
                 logger.error(f"Lỗi khi tải mô hình: {str(e)}")
-                # Tạo mô hình mới nếu không tải được
                 model = Sequential()
                 model.add(keras.layers.LSTM(50, return_sequences=True, input_shape=(30, 1)))
                 model.add(keras.layers.LSTM(50, return_sequences=False))
@@ -79,7 +72,6 @@ def xuly(data, SYMB, fd):
                 model.add(keras.layers.Dense(1))
                 
                 try:
-                    # Tải trọng số từ file h5
                     with h5py.File(model_path, 'r') as f:
                         weight_layers = [layer for layer in model.layers if len(layer.weights) > 0]
                         
@@ -93,11 +85,9 @@ def xuly(data, SYMB, fd):
                                 if weights:
                                     layer.set_weights(weights)
                     
-                    # Lưu lại mô hình đã sửa
                     model.save(model_path)
                 except Exception as e:
                     logger.error(f"Lỗi khi đọc trọng số: {str(e)}")
-                    # Tạo và lưu mô hình mới
                     model = Sequential()
                     model.add(keras.layers.LSTM(50, return_sequences=True, input_shape=(30, 1)))
                     model.add(keras.layers.LSTM(50, return_sequences=False))
@@ -120,7 +110,6 @@ def xuly(data, SYMB, fd):
         logger.error(f"Lỗi trong quá trình xử lý dự đoán: {str(e)}")
         return None
 
-# Hàm lấy dữ liệu cổ phiếu từ VNDIRECT API
 def get_stock_data_vndirect(symbol, start, end):
     try:
         start_dt = datetime.datetime.combine(start, datetime.datetime.min.time())
@@ -170,7 +159,6 @@ def get_stock_data_vndirect(symbol, start, end):
         logger.error(f"Lỗi không mong đợi: {str(e)}")
         return None
 
-# Hàm dự đoán giá cổ phiếu cho các ngày tương lai
 def predict(data, fd, SYMB, day):
     try:
         today = datetime.datetime.today()
@@ -218,14 +206,12 @@ def predict(data, fd, SYMB, day):
         logger.error(f"Lỗi trong quá trình dự đoán: {str(e)}")
         return {"error": f"Lỗi trong quá trình dự đoán: {str(e)}"}
 
-# Tạo biểu đồ chuyển động giá
 def create_price_movement_chart(stock, fd, SYMB):
     try:
         if stock is None or fd not in stock.columns:
             return {"error": "Dữ liệu không hợp lệ"}
             
         r_t = np.log((stock[fd]/stock[fd].shift(1)))
-        # Xử lý giá trị NaN hoặc Inf
         r_t = r_t.replace([np.inf, -np.inf], np.nan).dropna()
         
         if len(r_t) == 0:
@@ -233,7 +219,6 @@ def create_price_movement_chart(stock, fd, SYMB):
             
         mean = np.mean(r_t)
         
-        # Điền giá trị đầu tiên bằng giá trị trung bình
         if pd.isna(r_t.iloc[0]):
             r_t.iloc[0] = mean
         
@@ -254,7 +239,6 @@ def create_price_movement_chart(stock, fd, SYMB):
         logger.error(f"Lỗi khi tạo biểu đồ chuyển động giá: {str(e)}")
         return {"error": f"Lỗi khi tạo biểu đồ: {str(e)}"}
 
-# Tạo biểu đồ lợi nhuận trung bình hàng ngày
 def create_avg_profit_chart(r_t, mean, SYMB):
     try:
         plt.figure(figsize=(12, 5))

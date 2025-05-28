@@ -79,14 +79,7 @@ const predictStock = async () => {
 }
 ```
 
-## Xử lý lỗi khi VNDIRECT bảo trì
 
-
-## Lưu ý
-
-- API VNDIRECT đang bảo trì đến ngày 05/05/2025
-- Mô hình sẽ được tự động khởi tạo nếu không tồn tại trong thư mục Model
-- Kiểm tra thêm thông tin về API tại endpoint chính `/` 
 =======
 # Predict-Stock-Vn
 >>>>>>> ff0d7e049fda3ed8afc08a61d96ac058da3c1345 -->
